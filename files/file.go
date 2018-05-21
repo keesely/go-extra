@@ -17,6 +17,7 @@ const (
 	WRONLY = os.O_WRONLY
 )
 
+// 获取文件内容
 func GET(file string) (string, error) {
 	handle, err := os.Open(file)
 	if err != nil {
@@ -28,6 +29,7 @@ func GET(file string) (string, error) {
 	return string(content), err
 }
 
+// 写入文件内容
 func PUT(file string, content string, _append int) (bool, error) {
 	if true != Exists(file) {
 		_, err := os.Create(file)
@@ -53,6 +55,7 @@ func PUT(file string, content string, _append int) (bool, error) {
 	return bool(nr > len(content)), err
 }
 
+// 判断文件是否存在
 func Exists(file string) bool {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		return false

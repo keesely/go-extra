@@ -1,0 +1,3 @@
+测试文本BEGIN
+追加文本
+ENDING.

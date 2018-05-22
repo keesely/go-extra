@@ -7,6 +7,7 @@
 package files
 
 import (
+	"bufio"
 	"io"
 	"io/ioutil"
 	"os"
@@ -18,7 +19,7 @@ const (
 )
 
 // 获取文件内容
-func GET(file string) (string, error) {
+func Get(file string) (string, error) {
 	handle, err := os.Open(file)
 	if err != nil {
 		return "", err
@@ -29,8 +30,24 @@ func GET(file string) (string, error) {
 	return string(content), err
 }
 
+// 逐行读取文件输出数组
+func Files(file string) ([]string, error) {
+	handle, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer handle.Close()
+
+	bs := bufio.NewScanner(handle)
+	buf := []string{}
+	for bs.Scan() {
+		buf = append(buf, bs.Text())
+	}
+	return buf, nil
+}
+
 // 写入文件内容
-func PUT(file string, content string, _append int) (bool, error) {
+func Put(file string, content string, _append int) (bool, error) {
 	if true != Exists(file) {
 		_, err := os.Create(file)
 

@@ -70,7 +70,7 @@ func Ini(cfg string) *IniCfg {
 	return this
 }
 
-func (this *IniCfg) String(key string, def interface{}) interface{} {
+func (this *IniCfg) Get(key string, def interface{}) interface{} {
 	split := strings.SplitN(key, ":", 2)
 
 	if len(split) == 2 {
@@ -99,7 +99,7 @@ func (this *IniCfg) All(partter ...string) map[string]string {
 	return this.data[partter[0]]
 }
 
-func (this *IniCfg) SetString(key string, value string) *IniCfg {
+func (this *IniCfg) Set(key string, value string) *IniCfg {
 	split := strings.SplitN(key, ":", 2)
 	if len(split) == 2 {
 		this.data[split[0]][split[1]] = value

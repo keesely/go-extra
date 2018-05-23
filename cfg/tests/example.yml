@@ -1,0 +1,13 @@
+version: "1.0"
+services:
+
+  node1:
+    name: "hello"
+    data:
+      - "hello world"
+      - "hi kee"
+
+  node2:
+    name: "world"
+    data: ["world", "2016"]
+    

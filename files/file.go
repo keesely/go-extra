@@ -69,7 +69,7 @@ func Put(file string, content string, _append int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return bool(nr > len(content)), err
+	return bool(nr >= len(content)), err
 }
 
 // 判断文件是否存在

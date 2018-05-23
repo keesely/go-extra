@@ -19,14 +19,14 @@ func Test(t *testing.T) {
 
 	fmt.Println(cfg)
 
-	fmt.Println(cfg.String("mongo:User", "default"))
-	fmt.Println(cfg.String("mongo:AAA", 0))
-	fmt.Println(cfg.String("Admin", "Locel"))
-	fmt.Println(cfg.String("mongo:Admin", "NOFOUND"))
-	fmt.Println(cfg.String("Admin:DNS", "NOFOUND"))
-	fmt.Println(cfg.String("Admin:QUI", "NOFOUND"))
+	fmt.Println(cfg.Get("mongo:User", "default"))
+	fmt.Println(cfg.Get("mongo:AAA", 0))
+	fmt.Println(cfg.Get("Admin", "Locel"))
+	fmt.Println(cfg.Get("mongo:Admin", "NOFOUND"))
+	fmt.Println(cfg.Get("Admin:DNS", "NOFOUND"))
+	fmt.Println(cfg.Get("Admin:QUI", "NOFOUND"))
 
-	cfg.SetString("production:ADDKEY", "110110100101")
+	cfg.Set("production:ADDKEY", "110110100101")
 
 	fmt.Println("PRINT TO `production`")
 	data := cfg.All("production")
@@ -34,7 +34,7 @@ func Test(t *testing.T) {
 		fmt.Println(k, "=>", v)
 	}
 
-	cfg.SetString("ADDKEY", "New&KEY:Value")
+	cfg.Set("ADDKEY", "New&KEY:Value")
 	fmt.Println("PRINT TO `nil`")
 	data2 := cfg.All()
 	for k, v := range data2 {

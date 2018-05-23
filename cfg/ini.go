@@ -119,6 +119,10 @@ func (this *IniCfg) Save(file ...string) bool {
 	return save
 }
 
+func (this *IniCfg) ToString() string {
+	return this.psToIni()
+}
+
 func psVal(vals []string) (string, string) {
 	key := strings.TrimSpace(vals[0])
 	value := strings.TrimSpace(vals[1])

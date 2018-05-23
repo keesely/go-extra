@@ -1,0 +1,24 @@
+A:
+  Aa:
+    a1: hello
+    a2:
+    - hello world
+    - hi kee
+  Ab:
+    b1:
+      ba:
+      - add value 1
+      - Val 2
+      int:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    b2:
+    - world
+    - 2016
+    int: 100
+services:
+  data: ADD TO DATA
+version: "1024.1"

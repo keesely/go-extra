@@ -9,7 +9,7 @@ package cfg
 import (
 	"github.com/keesely/go-extra/files"
 	"gopkg.in/yaml.v2"
-	//"reflect"
+	"reflect"
 	"strings"
 )
 
@@ -41,23 +41,52 @@ func (this *YamlCfg) All() interface{} {
 	return this.data
 }
 
-func (this *YamlCfg) Get(key string, def ...interface{}) interface{} {
-	split := strings.Split(key, ":")
+func (this *YamlCfg) ToString() string {
+	t, _ := yaml.Marshal(this.data)
+	return string(t)
+}
 
+func (this *YamlCfg) Get(key string, def ...interface{}) interface{} {
+	split := strings.Split(key, ".")
 	data := this.data
 
-	val := getVal(split, data)
-	if val == nil {
-		if def != nil {
-			return def[0]
+	defVal := func(val []interface{}) interface{} {
+		if val != nil {
+			return val[0]
 		}
 		return nil
 	}
-	return val
+
+	for _, sk := range split {
+		split = split[1:]
+		if _, exists := data[sk]; exists {
+			v := reflect.TypeOf(data[sk])
+			if v.Kind() == reflect.Array || len(split) == 0 {
+				return data[sk]
+			}
+
+			if v.Kind() == reflect.String {
+				return defVal(def)
+			}
+
+			val := data[sk]
+			data = val.(map[interface{}]interface{})
+		} else {
+			return defVal(def)
+		}
+	}
+
+	return data
+
+	// val := getVal(split, data)
+	// if val == nil {
+	//  return defVal(def)
+	// }
+	// return val
 }
 
-func (this *YamlCfg) Set(key string, value string) *YamlCfg {
-	split := strings.Split(key, ":")
+func (this *YamlCfg) Set(key string, value interface{}) *YamlCfg {
+	split := strings.Split(key, ".")
 	data := this.data
 
 	for _, sk := range split {
@@ -66,6 +95,10 @@ func (this *YamlCfg) Set(key string, value string) *YamlCfg {
 			data[sk] = make(map[interface{}]interface{})
 		}
 		if len(split) > 0 {
+			v := reflect.TypeOf(data[sk])
+			if v.Kind() == reflect.String {
+				data[sk] = make(map[interface{}]interface{})
+			}
 			tmp := data[sk]
 			data = tmp.(map[interface{}]interface{})
 		} else {
@@ -75,9 +108,15 @@ func (this *YamlCfg) Set(key string, value string) *YamlCfg {
 	return this
 }
 
-func (this *YamlCfg) Save() []byte {
+func (this *YamlCfg) Save(file ...string) bool {
 	t, _ := yaml.Marshal(this.data)
-	return t
+	fn := this.cfg
+	if file != nil {
+		fn = file[0]
+	}
+
+	save, _ := files.Put(fn, string(t), 0)
+	return save
 }
 
 func getVal(key []string, data map[interface{}]interface{}) interface{} {
@@ -86,21 +125,17 @@ func getVal(key []string, data map[interface{}]interface{}) interface{} {
 	if _, ext := data[sk]; ext {
 		val := data[sk]
 		switch val.(type) {
-		case string:
+		case []interface{}:
 			return val
-		case int:
-			return val
-		case int32:
-			return val
-		case int64:
-			return val
-		default:
+		case interface{}:
 			if len(key) == 0 {
 				return val
 			} else {
 				tt := val.(map[interface{}]interface{})
 				return getVal(key, tt)
 			}
+		default:
+			return val
 		}
 	} else {
 		return nil

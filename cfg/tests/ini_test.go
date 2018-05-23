@@ -26,7 +26,9 @@ func Test(t *testing.T) {
 	fmt.Println(cfg.Get("Admin:DNS", "NOFOUND"))
 	fmt.Println(cfg.Get("Admin:QUI", "NOFOUND"))
 
-	cfg.Set("production:ADDKEY", "110110100101")
+	cfg.Set("production:ADDKEY", 110110100101)
+	cfg.Set("production:ADDKEY2", []string{"hi admin", "hello", "world"})
+	cfg.Set("production:ADDINT", []int{1, 2, 3, 4, 5, 6})
 
 	fmt.Println("PRINT TO `production`")
 	data := cfg.All("production")
@@ -36,6 +38,7 @@ func Test(t *testing.T) {
 
 	cfg.Set("ADDKEY", "New&KEY:Value")
 	fmt.Println("PRINT TO `nil`")
+
 	data2 := cfg.All()
 	for k, v := range data2 {
 		fmt.Println(k, "=>", v)

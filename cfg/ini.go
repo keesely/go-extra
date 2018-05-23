@@ -14,7 +14,7 @@ import (
 
 type IniCfg struct {
 	cfg  string
-	data map[interface{}]map[string]string `json:"data"`
+	data map[interface{}]map[string]interface{} `json:"data"`
 }
 
 func Ini(cfg string) *IniCfg {
@@ -22,11 +22,11 @@ func Ini(cfg string) *IniCfg {
 
 	this := &IniCfg{
 		cfg:  cfg,
-		data: make(map[interface{}]map[string]string),
+		data: make(map[interface{}]map[string]interface{}),
 	}
 
 	partter := ""
-	this.data[0] = make(map[string]string)
+	this.data[0] = make(map[string]interface{})
 	for _, text := range cfgs {
 		text = strings.TrimSpace(text)
 		n := len(text)
@@ -40,7 +40,7 @@ func Ini(cfg string) *IniCfg {
 			partter = strings.Replace(partter, "]", "", -1)
 
 			if _, exists := this.data[partter]; exists == false {
-				this.data[partter] = make(map[string]string)
+				this.data[partter] = make(map[string]interface{})
 			}
 		}
 
@@ -92,19 +92,19 @@ func (this *IniCfg) Get(key string, def interface{}) interface{} {
 	}
 }
 
-func (this *IniCfg) All(partter ...string) map[string]string {
+func (this *IniCfg) All(partter ...string) map[string]interface{} {
 	if partter == nil {
 		return this.data[0]
 	}
 	return this.data[partter[0]]
 }
 
-func (this *IniCfg) Set(key string, value string) *IniCfg {
+func (this *IniCfg) Set(key string, value interface{}) *IniCfg {
 	split := strings.SplitN(key, ":", 2)
 	if len(split) == 2 {
-		this.data[split[0]][split[1]] = value
+		this.data[split[0]][split[1]] = value //fmt.Sprintf("%+v", value)
 	} else {
-		this.data[0][key] = value
+		this.data[0][key] = value //fmt.Sprintf("%+v", value)
 	}
 	return this
 }
@@ -123,10 +123,14 @@ func (this *IniCfg) ToString() string {
 	return this.psToIni()
 }
 
-func psVal(vals []string) (string, string) {
+func psVal(vals []string) (string, interface{}) {
 	key := strings.TrimSpace(vals[0])
 	value := strings.TrimSpace(vals[1])
-	value = strings.Trim(value, `"`)
+	n := len(value)
+	if "[" == value[0:1] && "]" == value[n-1:] {
+		tmp := strings.Split(" ", value)
+		return key, tmp
+	}
 	return key, value
 }
 
@@ -146,10 +150,11 @@ func (this *IniCfg) psToIni() string {
 	return text
 }
 
-func psToIniString(data map[string]string) string {
+func psToIniString(data map[string]interface{}) string {
 	text := ""
 	for k, v := range data {
-		text += k + " = " + v + "\n"
+		tv := fmt.Sprintf("%+v", v)
+		text += k + " = " + tv + "\n"
 	}
 	return text
 }

@@ -7,24 +7,26 @@
 package cfg
 
 import (
+	"fmt"
 	"github.com/keesely/go-extra/files"
 	"strings"
 )
 
-type Cfg struct {
-	multiData map[string]map[string]string
-	data      map[string]string
+type IniCfg struct {
+	cfg  string
+	data map[interface{}]map[string]string `json:"data"`
 }
 
-func Ini(cfg string) *Cfg {
+func Ini(cfg string) *IniCfg {
 	cfgs, _ := files.Files(cfg)
 
-	this := &Cfg{
-		multiData: make(map[string]map[string]string),
-		data:      make(map[string]string),
+	this := &IniCfg{
+		cfg:  cfg,
+		data: make(map[interface{}]map[string]string),
 	}
 
 	partter := ""
+	this.data[0] = make(map[string]string)
 	for _, text := range cfgs {
 		text = strings.TrimSpace(text)
 		n := len(text)
@@ -37,8 +39,8 @@ func Ini(cfg string) *Cfg {
 			partter = text[1:]
 			partter = strings.Replace(partter, "]", "", -1)
 
-			if _, exists := this.multiData[partter]; exists == false {
-				this.multiData[partter] = make(map[string]string)
+			if _, exists := this.data[partter]; exists == false {
+				this.data[partter] = make(map[string]string)
 			}
 		}
 
@@ -58,39 +60,92 @@ func Ini(cfg string) *Cfg {
 		}
 
 		if len(partter) > 0 {
-			this.multiData[partter][key] = value
+			this.data[partter][key] = value
 		} else {
-			this.data[key] = value
+			//this.data[key] = value
+			this.data[0][key] = value
 		}
 	}
 
 	return this
 }
 
-func (this *Cfg) String(key string, def interface{}) interface{} {
+func (this *IniCfg) String(key string, def interface{}) interface{} {
 	split := strings.SplitN(key, ":", 2)
 
 	if len(split) == 2 {
 		partter := split[0]
 		skey := split[1]
 
-		if _, exists := this.multiData[partter][skey]; exists {
-			return this.multiData[partter][skey]
+		if _, exists := this.data[partter][skey]; exists {
+			return this.data[partter][skey]
 		} else {
 			return def
 		}
 
 	} else {
-		if _, exists := this.data[key]; exists {
-			return this.data[key]
+		if _, exists := this.data[0][key]; exists {
+			return this.data[0][key]
 		} else {
 			return def
 		}
 	}
 }
 
+func (this *IniCfg) All(partter ...string) map[string]string {
+	if partter == nil {
+		return this.data[0]
+	}
+	return this.data[partter[0]]
+}
+
+func (this *IniCfg) SetString(key string, value string) *IniCfg {
+	split := strings.SplitN(key, ":", 2)
+	if len(split) == 2 {
+		this.data[split[0]][split[1]] = value
+	} else {
+		this.data[0][key] = value
+	}
+	return this
+}
+
+func (this *IniCfg) Save(file ...string) bool {
+	fn := this.cfg
+	if file != nil {
+		fn = file[0]
+	}
+
+	save, _ := files.Put(fn, this.psToIni(), 0)
+	return save
+}
+
 func psVal(vals []string) (string, string) {
 	key := strings.TrimSpace(vals[0])
 	value := strings.TrimSpace(vals[1])
+	value = strings.Trim(value, `"`)
 	return key, value
+}
+
+func (this *IniCfg) psToIni() string {
+	text := psToIniString(this.data[0])
+
+	for k, v := range this.data {
+		if k == 0 {
+			continue
+		}
+
+		partter := fmt.Sprintf("%s", k)
+		text += "[" + partter + "]\n"
+		text += psToIniString(v)
+	}
+
+	return text
+}
+
+func psToIniString(data map[string]string) string {
+	text := ""
+	for k, v := range data {
+		text += k + " = " + v + "\n"
+	}
+	return text
 }
